@@ -1,0 +1,115 @@
+@use '../utils/is';
+@use '../utils/string';
+@use '../utils/math';
+
+@use 'sass:list';
+@use 'sass:meta';
+
+@function color($input, $expected) {
+  $channels: null;
+  $alpha: null;
+
+  @if is.special($input, 'var') { @return null; }
+
+  $input-type: meta.type-of($input);
+
+  @if $input-type == 'list'
+  and (
+    list.is-bracketed($input)
+    or not list.index(('space', 'slash'), list.separator($input))
+  ) {
+    @error 'Input must be an unbracketed list, with space or slash separators';
+  }
+
+  @if $input-type == 'list'
+  and list.separator($input) == 'slash' {
+    @if list.length($input) != 2 {
+      @error 'Slash-separated input should only include channels & alpha values';
+    }
+
+    $channels: list.nth($input, 1);
+    $alpha: list.nth($input, 2);
+  } @else {
+    $channels: ();
+
+    @for $i from 1 to list.length($input) {
+      $channels: list.append($channels, list.nth($input, $i), 'space');
+    }
+
+    $last: list.nth($input, -1);
+
+    @if meta.type-of($last) == 'string'
+    and string.index($last, '/') {
+      $split-last: string.split($last, '/');
+
+      @if list.length($split-last) != 2 {
+        @error 'Unable to parse final value of input';
+      }
+
+      @for $i from 1 through 2 {
+        $item: list.nth($split-last, $i);
+        $split-last: list.set-nth(
+          $split-last, $i, math.to-number($item) or $item
+        );
+      }
+
+      $channels: list.append($channels, list.nth($split-last, 1));
+      $alpha: list.nth($split-last, 2);
+    } /*
+      missing logic here for handling 'two slash-separated numbers'
+    */ @else {
+      $channels: list.append($channels, $last);
+    }
+  }
+
+  // validate channels
+  @if (not $channels) or ($channels == ()) {
+    @error 'No channel values were defined';
+  }
+
+  @if not is.special($channels, 'var') {
+    @if meta.type-of($channels) != 'list'
+    or list.is-bracketed($channels)
+    or list.separator($channels) != 'space' {
+      @error 'Channels must be an unbracketed, space-separated list';
+    }
+
+    @if list.length($channels) > $expected {
+      @error 'Max channel count is #{$expected}, but #{list.length($channels)} channels were given';
+    }
+
+    @each $channel in $channels {
+      @if meta.type-of($channel) != 'number'
+      and not (is.none($channel) or is.special($channel)) {
+        @error 'Channel values should be numbers, css variables, or the keyword none';
+      }
+    }
+  }
+
+  // validate alpha
+  @if not $alpha {
+    $alpha: 1;
+  } @else if not is.special($alpha) {
+    @if meta.type-of($alpha) == 'number' {
+      $alpha: utils.percent-convert($alpha, 1);
+    } @else if not is.none($alpha) {
+      @error 'alpha value must be a number or the keyword none';
+    }
+  }
+
+  // handle special values
+  @if is.special($channels, 'var') { @return null; }
+  @if is.special($alpha) { @return null; }
+
+  @each $channel in $channels {
+    @if is.special($channel) { @return null; }
+  }
+
+  // require exact channel-count
+  @if list.length($channels) != $expected {
+    @error 'Expected #{$expected} channels, but found #{list.length($channels)}';
+  }
+
+  // return the result
+  @return list.slash($channels, $alpha);
+}

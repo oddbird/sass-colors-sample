@@ -1,0 +1,17 @@
+@use '../utils/is';
+
+@function color($space, $channels, $alpha, $is-legacy) {
+  $check: (
+    is.type($space, 'string', 'color space')
+    is.type($channels, 'list', 'color channels')
+    is.type($alpha, 'number', 'color alpha')
+    is.type($is-legacy, 'boolean', 'color is-legacy')
+  );
+
+  @return (
+    'space': $space,
+    'channels': $channels,
+    'alpha': $alpha,
+    'is-legacy': $is-legacy,
+  );
+}

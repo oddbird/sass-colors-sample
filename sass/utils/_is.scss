@@ -1,0 +1,50 @@
+@use 'string';
+@use 'throw';
+@use 'sass:list';
+@use 'sass:meta';
+
+@function type($value, $types, $throw-as) {
+  $is: meta.type-of($value);
+  @if not list.index($types, $is) {
+    @if $throw-as {
+      @return throw.error(
+        'Type should be one of "#{$types}", got "#{$is}"',
+        $throw-as
+      );
+    }
+
+    @return false;
+  }
+
+  @return true;
+}
+
+@function none($value) { @return $value == 'none'; }
+
+@function special(
+  $value,
+  $special: ('var', 'calc'),
+) {
+  @if none($value) { @return false; }
+
+  $is: false;
+  $type: meta.type-of($value);
+
+  @if list.index($special, 'calc') {
+    $is: $is or ($type == 'calculation') or (
+      ($type == 'string')
+      and (string.index($value, 'calc(') == 1)
+      and (string.slice($value, -1) == ')')
+    );
+  }
+
+  @if list.index($special, 'var') {
+    $is: $is or (
+      ($type == 'string')
+      and (string.index($value, 'var(') == 1)
+      and (string.slice($value, -1) == ')')
+    );
+  }
+
+  @return $is;
+}

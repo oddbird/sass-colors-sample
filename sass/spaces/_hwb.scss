@@ -1,0 +1,55 @@
+@use '../utils/is';
+@use '../utils/math';
+@use '../utils/throw';
+@use '../process';
+
+@use 'sass:list';
+
+@function clamp-wb($channel) {
+  @if not is.none($channel) {
+    @if not math.unit($channel) == '%' {
+      @return throw.error(
+        'Whiteness and blackness must be percentages',
+        'hwb()'
+      );
+    }
+
+    $channel: math.clamp(0%, $channel, 100%);
+  }
+
+  @return $channel;
+}
+
+
+@function hwb($channels) {
+  $components: process.parse-color($channels, 3);
+
+  @if not $components {
+    @return string.unquote('hwb(#{$channels})');
+  }
+
+  $channels: list.nth($components, 1);
+  $alpha: list.nth($components, 2);
+
+  $hue: list.nth($channels, 1);
+  $whiteness: list.nth($channels, 2);
+  $blackness: list.nth($channels, 3);
+
+  $hue: process.normalize-hue($hue, false);
+  $whiteness: clamp-wb($whiteness);
+  $blackness: clamp-wb($blackness);
+
+  $total: math.zero-none($whiteness) + math.zero-none($blackness);
+  @if $total > 100% {
+    // with values clamped, we should never have `none` values in here
+    $whiteness: math.div($whiteness, $total) * 100%;
+    $blackness: math.div($blackness, $total) * 100%;
+  }
+
+  @return process.build-color(
+    'hwb',
+    ($hue, $whiteness, $blackness),
+    $alpha,
+    false,
+  );
+}

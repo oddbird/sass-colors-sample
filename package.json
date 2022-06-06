@@ -1,0 +1,43 @@
+{
+  "name": "@oddbird/sass-colors-sample",
+  "version": "0.0.1",
+  "title": "Sass Colors Sample",
+  "description": "New color formats, adjustments, and conversions in Sass",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "index.scss",
+  "author": "Miriam Suzanne",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oddbird/sass-colors-sample"
+  },
+  "bugs": "https://github.com/oddbird/sass-colors-sample/issues",
+  "homepage": "https://github.com/oddbird/sass-colors-sample",
+  "keywords": [
+    "sass",
+    "scss",
+    "css",
+    "colors",
+    "design",
+    "design systems",
+    "CIE",
+    "Lab",
+    "sRGB",
+    "hwb",
+    "LCH"
+  ],
+  "scripts": {
+    "test": "mocha",
+    "watch": "chokidar 'test/**' 'sass/**/*.scss' -c 'yarn test'",
+    "commit": "yarn test"
+  },
+  "devDependencies": {
+    "chokidar-cli": "^3.0.0",
+    "mocha": "^10.0.0",
+    "npm-run-all": "^4.1.5",
+    "sass": "^1.52.2",
+    "sass-true": "^6.1.0"
+  }
+}

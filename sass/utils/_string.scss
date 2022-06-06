@@ -1,0 +1,67 @@
+@forward 'sass:string';
+
+@use 'sass:string';
+@use 'sass:list';
+@use 'sass:meta';
+
+@function split($string, $separator, $limit: null) {
+  @if meta.type-of($string) != 'string' {
+      @error '$string is not a string';
+  }
+  @if meta.type-of($separator) != 'string' {
+      @error '$separator is not a string';
+  }
+  @if meta.type-of($limit) == 'number' {
+      @if $limit < 0 or $limit != math.round($limit) {
+          @error '$limit must be a positive intiger or null';
+      }
+  } @else if $limit != null {
+      @error '$limit must be a positive intiger or null';
+  }
+  @if $string == '' {
+    @return list.append((), $string);
+  }
+
+  $split-list: ();
+
+  @if $limit == 0 {
+      @return $split-list;
+  }
+
+  $length: string.length($string);
+  $limit: if($limit == null, $length, $limit);
+  $split-counter: 0;
+
+  @while $split-counter <= $limit and $length > 0 {
+      @if $split-counter == $limit {
+          $split-list: list.append($split-list, $string);
+          $string: '';
+      } @else if $separator == '' {
+          $code-point: string.slice($string, 1, 1);
+          $split-list: list.append($split-list, $code-point);
+          $string: string.slice($string, 2);
+          $split-counter: $split-counter + 1;
+      } @else {
+          $index: string.index($string, $separator);
+          // current logic clearly makes sense if the index is > 1,
+          // but returns an empty first item if the index is 1.
+          // Is that the desired behavior?
+          @if $index {
+              $current-substring: string.slice($string, 1, $index - 1);
+              $split-list: list.append($split-list, $current-substring);
+              $string: string.slice($string, $index + string.length($separator));
+              $split-counter: $split-counter + 1;
+          } @else {
+              // What happens if the index is null
+              // (separator is not present in string)?
+              // return the string
+              $split-list: list.append($split-list, $string);
+              $string: '';
+          }
+      }
+
+      // we need to update the length before we repeat the loop
+      $length: string.length($string);
+  }
+  @return $split-list;
+}
