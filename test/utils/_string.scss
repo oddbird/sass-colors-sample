@@ -1,49 +1,49 @@
 @use '../../node_modules/sass-true' as *;
-@use '../../sass/utils/math';
+@use '../../sass/utils/string';
 
 @include describe('to-number') {
   @include it('returns a number unchanged') {
-    @include assert-equal(math.to-number(3), 3);
-    @include assert-equal(math.to-number(31), 31);
-    @include assert-equal(math.to-number(3.1em), 3.1em);
+    @include assert-equal(string.to-number(3), 3);
+    @include assert-equal(string.to-number(31), 31);
+    @include assert-equal(string.to-number(3.1em), 3.1em);
   }
 
   @include it('returns null if no number is found') {
     @include assert-equal(
-      math.to-number('-he11o'),
+      string.to-number('-he11o'),
       null
     );
 
     @include assert-equal(
-      math.to-number('11omg'),
+      string.to-number('11omg'),
       null
     );
   }
 
   @include it('converts a simple number') {
     @include assert-equal(
-      math.to-number('3123'),
+      string.to-number('3123'),
       3123
     );
   }
 
   @include it('converts a decimal number') {
     @include assert-equal(
-      math.to-number('9.6783'),
+      string.to-number('9.6783'),
       9.6783
     );
   }
 
   @include it('converts a negative number') {
     @include assert-equal(
-      math.to-number('-783'),
+      string.to-number('-783'),
       -783
     );
   }
 
   @include it('converts a length') {
     @include assert-equal(
-      math.to-number('-783em'),
+      string.to-number('-783em'),
       -783em
     );
   }

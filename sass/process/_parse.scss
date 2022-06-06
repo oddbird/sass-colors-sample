@@ -1,6 +1,7 @@
 @use '../utils/is';
 @use '../utils/string';
 @use '../utils/math';
+@use '../utils/throw';
 
 @use 'sass:list';
 @use 'sass:meta';
@@ -18,13 +19,19 @@
     list.is-bracketed($input)
     or not list.index(('space', 'slash'), list.separator($input))
   ) {
-    @error 'Input must be an unbracketed list, with space or slash separators';
+    @return throw.error(
+      'Input must be an unbracketed list, with space or slash separators',
+      'build color'
+    );
   }
 
   @if $input-type == 'list'
   and list.separator($input) == 'slash' {
     @if list.length($input) != 2 {
-      @error 'Slash-separated input should only include channels & alpha values';
+      @return throw.error(
+        'Slash-separated input should only include channels & alpha values',
+        'build color'
+      );
     }
 
     $channels: list.nth($input, 1);
@@ -43,13 +50,16 @@
       $split-last: string.split($last, '/');
 
       @if list.length($split-last) != 2 {
-        @error 'Unable to parse final value of input';
+        @return throw.error(
+          'Unable to parse final value of input',
+          'build color'
+        );
       }
 
       @for $i from 1 through 2 {
         $item: list.nth($split-last, $i);
         $split-last: list.set-nth(
-          $split-last, $i, math.to-number($item) or $item
+          $split-last, $i, string.to-number($item) or $item
         );
       }
 
@@ -64,24 +74,36 @@
 
   // validate channels
   @if (not $channels) or ($channels == ()) {
-    @error 'No channel values were defined';
+    @return throw.error(
+      'No channel values were defined',
+      'build color'
+    );
   }
 
   @if not is.special($channels, 'var') {
     @if meta.type-of($channels) != 'list'
     or list.is-bracketed($channels)
     or list.separator($channels) != 'space' {
-      @error 'Channels must be an unbracketed, space-separated list';
+      @return throw.error(
+        'Channels must be an unbracketed, space-separated list',
+        'build color'
+      );
     }
 
     @if list.length($channels) > $expected {
-      @error 'Max channel count is #{$expected}, but #{list.length($channels)} channels were given';
+      @return throw.error(
+        'Max channel count is #{$expected}, but #{list.length($channels)} channels were given',
+        'build color'
+      );
     }
 
     @each $channel in $channels {
       @if meta.type-of($channel) != 'number'
       and not (is.none($channel) or is.special($channel)) {
-        @error 'Channel values should be numbers, css variables, or the keyword none';
+        @return throw.error(
+          'Channel values should be numbers, css variables, or the keyword none',
+          'build color'
+        );
       }
     }
   }
@@ -93,7 +115,10 @@
     @if meta.type-of($alpha) == 'number' {
       $alpha: utils.percent-convert($alpha, 1);
     } @else if not is.none($alpha) {
-      @error 'alpha value must be a number or the keyword none';
+      @return throw.error(
+        'alpha value must be a number or the keyword none',
+        'build color'
+      );
     }
   }
 
@@ -107,7 +132,10 @@
 
   // require exact channel-count
   @if list.length($channels) != $expected {
-    @error 'Expected #{$expected} channels, but found #{list.length($channels)}';
+    @return throw.error(
+      'Expected #{$expected} channels, but found #{list.length($channels)}',
+      'build color'
+    );
   }
 
   // return the result
