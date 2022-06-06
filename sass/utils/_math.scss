@@ -1,12 +1,16 @@
 @forward 'sass:math';
 
+@use 'throw';
 @use 'sass:math';
 
 @function percent-convert($number, $max) {
   $unit: math.unit($number);
 
   @if $unit != '' and $unit != '%' {
-    @error 'Can only percent-convert percentages';
+    @return throw.error(
+      'Can only percent-convert percentages',
+      'math.percent-convert()'
+    );
   }
 
   @if $unit == '%' {
@@ -16,12 +20,15 @@
   @return math.clamp(0, $number, $max);
 }
 
-@function to-deg($hue) {
-  @if not math.compatible($hue, 1deg) {
-    @error 'Cannot convert #{$hue} to degrees';
+@function to-deg($number) {
+  @if not math.compatible($number, 1deg) {
+    @return throw.error(
+      'Cannot convert #{math.unit($number)} to degrees',
+      'math.to-deg()'
+    );
   }
 
-  @return 0deg + $hue;
+  @return 0deg + $number;
 }
 
 @function zero-none($value) {

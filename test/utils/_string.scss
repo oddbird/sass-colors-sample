@@ -1,50 +1,108 @@
 @use '../../node_modules/sass-true' as *;
 @use '../../sass/utils/string';
+@use 'sass:list';
 
-@include describe('to-number') {
-  @include it('returns a number unchanged') {
-    @include assert-equal(string.to-number(3), 3);
-    @include assert-equal(string.to-number(31), 31);
-    @include assert-equal(string.to-number(3.1em), 3.1em);
+@include test-module('utils/string') {
+  // split()
+  @include describe('split') {
+    @include it('errors when $string is not a string') {
+      @include assert-equal(
+        string.split(34, 12),
+        'ERROR [string.split()] $string is not a string'
+      );
+    }
+
+    @include it('errors when $separator is not a string') {
+      @include assert-equal(
+        string.split('34', 12),
+        'ERROR [string.split()] $separator is not a string'
+      );
+    }
+
+    @include it('errors when $limit is negative') {
+      @include assert-equal(
+        string.split('string', '', -1),
+        'ERROR [string.split()] $limit must be a positive integer or null'
+      );
+    }
+
+    @include it('errors when $limit is not an integer') {
+      @include assert-equal(
+        string.split('string', '', 0.25),
+        'ERROR [string.split()] $limit must be a positive integer or null'
+      );
+    }
+
+    @include it('errors when $limit is not a number or null') {
+      @include assert-equal(
+        string.split('string', '', 'pizza'),
+        'ERROR [string.split()] $limit must be a positive integer or null'
+      );
+    }
+
+    @include it('returns a list with empty $string') {
+      @include assert-equal(
+        string.split('', '/'),
+        list.append((), '')
+      );
+    }
+
+    // @@@ flesh out these tests…
   }
 
-  @include it('returns null if no number is found') {
-    @include assert-equal(
-      string.to-number('-he11o'),
-      null
-    );
+  // to-number()
+  @include describe('to-number') {
+    @include it('returns a number unchanged') {
+      @include assert-equal(string.to-number(3), 3);
+      @include assert-equal(string.to-number(31), 31);
+      @include assert-equal(string.to-number(3.1em), 3.1em);
+    }
 
-    @include assert-equal(
-      string.to-number('11omg'),
-      null
-    );
-  }
+    @include it('returns null if no number is found') {
+      @include assert-equal(
+        string.to-number('-he11o'),
+        null
+      );
 
-  @include it('converts a simple number') {
-    @include assert-equal(
-      string.to-number('3123'),
-      3123
-    );
-  }
+      @include assert-equal(
+        string.to-number('11omg'),
+        null
+      );
+    }
 
-  @include it('converts a decimal number') {
-    @include assert-equal(
-      string.to-number('9.6783'),
-      9.6783
-    );
-  }
+    @include it('converts a simple number') {
+      @include assert-equal(
+        string.to-number('3123'),
+        3123
+      );
+    }
 
-  @include it('converts a negative number') {
-    @include assert-equal(
-      string.to-number('-783'),
-      -783
-    );
-  }
+    @include it('converts a decimal number') {
+      @include assert-equal(
+        string.to-number('9.6783'),
+        9.6783
+      );
+    }
 
-  @include it('converts a length') {
-    @include assert-equal(
-      string.to-number('-783em'),
-      -783em
-    );
+    @include it('converts a negative number') {
+      @include assert-equal(
+        string.to-number('-783'),
+        -783
+      );
+    }
+
+    @include it('converts a length') {
+      @include assert-equal(
+        string.to-number('-7.83em'),
+        -7.83em
+      );
+    }
+
+    @include it('Errors if no number, and $throw is set') {
+      @include assert-equal(
+        string.to-number('nan', true),
+        'ERROR [string.to-number()] Unable to convert "nan" to a number'
+      );
+    }
   }
 }

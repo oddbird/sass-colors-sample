@@ -1,7 +1,7 @@
 @forward 'sass:string';
 
-@use 'throw';
 @use 'math';
+@use 'throw';
 @use 'sass:string';
 @use 'sass:list';
 @use 'sass:map';
@@ -11,28 +11,30 @@
   @if meta.type-of($string) != 'string' {
     @return throw.error(
       '$string is not a string',
-      'string split'
+      'string.split()'
     );
   }
   @if meta.type-of($separator) != 'string' {
     @return throw.error(
       '$separator is not a string',
-      'string split'
+      'string.split()'
     );
   }
+
   @if meta.type-of($limit) == 'number' {
     @if $limit < 0 or $limit != math.round($limit) {
       @return throw.error(
-        '$limit must be a positive intiger or null',
-        'string split'
+        '$limit must be a positive integer or null',
+        'string.split()'
       );
     }
   } @else if $limit != null {
     @return throw.error(
-      '$limit must be a positive intiger or null',
-      'string split'
+      '$limit must be a positive integer or null',
+      'string.split()'
     );
   }
+
   @if $string == '' {
     @return list.append((), $string);
   }
@@ -87,7 +89,7 @@
   } @else if meta.type-of($string) != 'string' {
     @return throw.error(
       'Value for `to-number` should be a number or a string.',
-      'string to-number'
+      'string.to-number()'
     );
   }
 
@@ -129,8 +131,8 @@
       // otherwise, return null/error for a failed conversion
       @if $throw {
         @return throw.error(
-          'Failed to convert "#{$string}" to a number',
-          'to-number'
+          'Unable to convert "#{$string}" to a number',
+          'string.to-number()'
         );
       } @else {
         @return null;

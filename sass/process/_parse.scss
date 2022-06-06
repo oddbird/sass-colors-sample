@@ -113,7 +113,7 @@
     $alpha: 1;
   } @else if not is.special($alpha) {
     @if meta.type-of($alpha) == 'number' {
-      $alpha: utils.percent-convert($alpha, 1);
+      $alpha: math.percent-convert($alpha, 1);
     } @else if not is.none($alpha) {
       @return throw.error(
         'alpha value must be a number or the keyword none',

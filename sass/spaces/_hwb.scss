@@ -5,7 +5,7 @@
 
 @use 'sass:list';
 
-@function clamp-wb($channel) {
+@function _clamp-wb($channel) {
   @if not is.none($channel) {
     @if not math.unit($channel) == '%' {
       @return throw.error(
@@ -19,7 +19,6 @@
 
   @return $channel;
 }
-
 
 @function hwb($channels) {
   $components: process.parse-color($channels, 3);
@@ -36,8 +35,8 @@
   $blackness: list.nth($channels, 3);
 
   $hue: process.normalize-hue($hue, false);
-  $whiteness: clamp-wb($whiteness);
-  $blackness: clamp-wb($blackness);
+  $whiteness: _clamp-wb($whiteness);
+  $blackness: _clamp-wb($blackness);
 
   $total: math.zero-none($whiteness) + math.zero-none($blackness);
   @if $total > 100% {

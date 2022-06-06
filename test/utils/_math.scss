@@ -1,0 +1,52 @@
+@use '../../node_modules/sass-true' as *;
+@use '../../sass/utils/math';
+
+@include test-module('utils/math') {
+  // percent-convert
+  @include describe('percent-convert') {
+    @include it('Errors when given units other than %') {
+      @include assert-equal(
+        math.percent-convert(23em, 1),
+        'ERROR [math.percent-convert()] Can only percent-convert percentages'
+      );
+    }
+
+    @include it('Converts a percentage to a decimal') {
+      @include assert-equal(
+        math.percent-convert(23%, 1),
+        0.23
+      );
+    }
+
+    @include it('Conversion is based on the max value') {
+      @include assert-equal(
+        math.percent-convert(23%, 2),
+        0.46
+      );
+    }
+
+    @include it('Clamps the result to the max value') {
+      @include assert-equal(
+        math.percent-convert(120%, 3),
+        3
+      );
+    }
+  }
+
+  // to-deg
+  @include describe('to-deg') {
+    @include it('Errors when given incompatible units') {
+      @include assert-equal(
+        math.to-deg(23em),
+        'ERROR [math.to-deg()] Cannot convert em to degrees'
+      );
+    }
+
+    @include it('Converts angles to degrees') {
+      @include assert-equal(
+        math.to-deg(-1.5turn),
+        -540deg
+      );
+    }
+  }
+}
