@@ -1,9 +1,10 @@
 @use '../utils/is';
+@use '../utils/list';
 @use '../utils/math';
+@use '../utils/string';
 @use '../utils/throw';
 @use '../process';
 
-@use 'sass:list';
 
 @function _clamp-wb($channel) {
   @if not is.none($channel) {
@@ -49,6 +50,6 @@
     'hwb',
     ($hue, $whiteness, $blackness),
     $alpha,
-    false,
+    true,
   );
 }

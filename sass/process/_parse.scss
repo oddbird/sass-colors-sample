@@ -1,16 +1,22 @@
 @use '../utils/is';
-@use '../utils/string';
+@use '../utils/list';
 @use '../utils/math';
+@use '../utils/string';
 @use '../utils/throw';
 
-@use 'sass:list';
 @use 'sass:meta';
 
-@function color($input, $expected) {
+@function color(
+  $input,
+  $expected,
+  $includes-space: false
+) {
+  $components: null;
+  $space: null;
   $channels: null;
   $alpha: null;
 
-  @if is.special($input, 'var') { @return null; }
+  @if is.special-variable($input) { @return null; }
 
   $input-type: meta.type-of($input);
 
@@ -34,17 +40,13 @@
       );
     }
 
-    $channels: list.nth($input, 1);
+    $components: list.nth($input, 1);
     $alpha: list.nth($input, 2);
   } @else {
-    $channels: ();
-
-    @for $i from 1 to list.length($input) {
-      $channels: list.append($channels, list.nth($input, $i), 'space');
-    }
-
+    $components: list.slice($input, 1, -1);
     $last: list.nth($input, -1);
 
+    // missing logic to test if string is un-quoted
     @if meta.type-of($last) == 'string'
     and string.index($last, '/') {
       $split-last: string.split($last, '/');
@@ -63,31 +65,47 @@
         );
       }
 
-      $channels: list.append($channels, list.nth($split-last, 1));
+      $components: list.append($components, list.nth($split-last, 1));
       $alpha: list.nth($split-last, 2);
-    } /*
-      missing logic here for handling 'two slash-separated numbers'
-    */ @else {
-      $channels: list.append($channels, $last);
+
+      // missing logic for 'two slash-separated numbers'
+    } @else {
+      $components: list.append($components, $last);
     }
   }
 
   // validate channels
-  @if (not $channels) or ($channels == ()) {
+  @if (not $components) or ($components == ()) {
     @return throw.error(
       'No channel values were defined',
       'build color'
     );
   }
 
-  @if not is.special($channels, 'var') {
-    @if meta.type-of($channels) != 'list'
-    or list.is-bracketed($channels)
-    or list.separator($channels) != 'space' {
+  @if is.special-variable($components) {
+    $channels: $components;
+  } @else {
+    @if meta.type-of($components) != 'list'
+    or list.is-bracketed($components)
+    or list.separator($components) != 'space' {
       @return throw.error(
         'Channels must be an unbracketed, space-separated list',
         'build color'
       );
+    }
+
+    @if $includes-space {
+      $space: list.nth($components, 1);
+      $channels: list.slice($components, 2);
+
+      @if not (meta.type-of($space) == 'string') {
+        @return throw.error(
+          'Color space must be a string',
+          'build color'
+        );
+      }
+    } @else {
+      $channels: $components;
     }
 
     @if list.length($channels) > $expected {
@@ -99,7 +117,7 @@
 
     @each $channel in $channels {
       @if meta.type-of($channel) != 'number'
-      and not (is.none($channel) or is.special($channel)) {
+      and not (is.none($channel) or is.special-number($channel)) {
         @return throw.error(
           'Channel values should be numbers, css variables, or the keyword none',
           'build color'
@@ -111,23 +129,24 @@
   // validate alpha
   @if not $alpha {
     $alpha: 1;
-  } @else if not is.special($alpha) {
+  } @else if not is.special-number($alpha) {
     @if meta.type-of($alpha) == 'number' {
       $alpha: math.percent-convert($alpha, 1);
     } @else if not is.none($alpha) {
       @return throw.error(
-        'alpha value must be a number or the keyword none',
+        'Alpha value must be a number or the keyword none',
         'build color'
       );
     }
   }
 
   // handle special values
-  @if is.special($channels, 'var') { @return null; }
-  @if is.special($alpha) { @return null; }
+  @if is.special-number($alpha) { @return null; }
+  @if is.special-variable($space) { @return null; }
 
+  // also catches a single custom prop for all $channels
   @each $channel in $channels {
-    @if is.special($channel) { @return null; }
+    @if is.special-number($channel) { @return null; }
   }
 
   // require exact channel-count
@@ -139,5 +158,6 @@
   }
 
   // return the result
-  @return list.slash($channels, $alpha);
+  $components: if($includes-space and $space, $space $channels, $channels);
+  @return list.slash($components, $alpha);
 }

@@ -1,0 +1,30 @@
+@forward 'sass:list';
+
+@use 'throw';
+@use 'sass:list';
+@use 'sass:math';
+
+@function template($template: ()) {
+  // return the same type of list we were given…
+  @return join((), (), list.separator($template), list.is-bracketed($template));
+}
+
+@function slice(
+  $list,
+  $start: 1,
+  $end: null,
+) {
+  $new: template($list);
+  $default-end: list.length($list) + 1;
+  $end: $end or $default-end;
+
+  @if math.abs($end) != $end {
+    $end: $default-end + $end;
+  }
+
+  @for $i from $start to $end {
+    $new: list.append($new, list.nth($list, $i));
+  }
+
+  @return $new;
+}

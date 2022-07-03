@@ -1,0 +1,61 @@
+@use '../../node_modules/sass-true' as *;
+@use '../../sass/spaces/cie';
+@use 'sass:string';
+
+// currently requires list.slash() for proper syntax
+@use 'sass:list';
+
+@include test-module('spaces/lab') {
+  // lab
+  @include describe('lab') {
+    @include it('Returns a color object') {
+      @include assert-equal(
+        cie.lab(35% 30% 50%),
+        (
+          'space': 'lab',
+          'channels': (35%, 30%, 50%),
+          'alpha': 1,
+          'is-legacy': false,
+        )
+      );
+    }
+
+    @include it('Returns a color object with alpha') {
+      @include assert-equal(
+        cie.lab(list.slash(0.34 0.234 50%, 45%)),
+        (
+          'space': 'lab',
+          'channels': (0.34, 0.234, 50%),
+          'alpha': 0.45,
+          'is-legacy': false,
+        )
+      );
+    }
+
+    @include it('Returns a color object with none') {
+      @include assert-equal(
+        cie.lab(20% none 50%),
+        (
+          'space': 'lab',
+          'channels': (20%, none, 50%),
+          'alpha': 1,
+          'is-legacy': false,
+        )
+       );
+    }
+
+    @include it('Returns the input as a string when special numbers are used') {
+      @include assert-equal(
+        cie.lab(list.slash(0.12 var(--w) 50%, 45%)),
+        string.unquote('lab(0.12 var(--w) 50% / 45%)')
+      );
+    }
+
+    @include it('Eagerly returns string when full value is a var') {
+      @include assert-equal(
+        cie.lab(var(--anything)),
+        string.unquote('lab(var(--anything))')
+      );
+    }
+  }
+}

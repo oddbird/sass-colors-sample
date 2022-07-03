@@ -1,0 +1,125 @@
+@use '../../node_modules/sass-true' as *;
+@use '../../sass/utils/is';
+
+@include test-module('utils/is') {
+  @include describe('type') {
+    @include it('Returns true when the type matches') {
+      @include assert-true(is.type('hello', 'string'));
+    }
+
+    @include it('Returns false when the type does not match') {
+      @include assert-false(is.type(23em, 'list'));
+    }
+
+    @include it('Handles a list of allowed types') {
+      @include assert-true(is.type(23em, 'list' 'number'));
+      @include assert-false(is.type('hello', 'list' 'number'));
+    }
+
+    @include it('Errors on mismatch when given a message') {
+      @include assert-equal(
+        is.type('hello', 'list' 'number', 'tests'),
+        'ERROR [tests] Type should be one of "list number", got "string"'
+      );
+    }
+  }
+
+  @include describe('none') {
+    @include it('Checks if the value is none') {
+      @include assert-true(is.none(none));
+      @include assert-true(is.none('none'));
+      @include assert-false(is.none(1));
+    }
+  }
+
+  @include describe('special-number') {
+    @include it('Recognizes calculations') {
+      @include assert-true(is.special-number(calc(3em + 2px)));
+    }
+    @include it('Recognizes calc strings') {
+      @include assert-true(is.special-number('calc(3em + 2px)'));
+    }
+    @include it('Recognizes var strings') {
+      @include assert-true(is.special-number(var(--anything)));
+    }
+    @include it('Recognizes env strings') {
+      @include assert-true(is.special-number(env(--var)));
+    }
+    @include it('Recognizes clamp strings') {
+      @include assert-true(is.special-number(clamp(1em, 5vw, 3em)));
+    }
+    @include it('Recognizes min strings') {
+      @include assert-true(is.special-number(min(1em, 5vw)));
+    }
+    @include it('Recognizes max strings') {
+      @include assert-true(is.special-number(max(1em, 5vw)));
+    }
+
+    @include it('Returns false for non-strings') {
+      @include assert-false(is.special-number(24), 'numbers');
+      @include assert-false(is.special-number(one two), 'lists');
+      @include assert-false(is.special-number(red), 'colors');
+    }
+
+    @include it('Returns false for partial strings') {
+      @include assert-false(
+        is.special-number('var(--any'),
+        'no end parens'
+      );
+      @include assert-false(
+        is.special-number('no calc(3em + 2px)'),
+        'extra start'
+      );
+      @include assert-false(
+        is.special-number('calc(3em + 2px) no'),
+        'extra end'
+      );
+    }
+  }
+
+  @include describe('special-variable') {
+    @include it('Recognizes var strings') {
+      @include assert-true(is.special-variable(var(--anything)));
+    }
+
+    @include it('Returns false for non-strings') {
+      @include assert-false(is.special-variable(24), 'numbers');
+      @include assert-false(is.special-variable(one two), 'lists');
+      @include assert-false(is.special-variable(red), 'colors');
+    }
+
+    @include it('Returns false for partial strings') {
+      @include assert-false(
+        is.special-variable('var(--any'),
+        'no end parens'
+      );
+      @include assert-false(
+        is.special-variable('no var(--anything)'),
+        'extra start'
+      );
+      @include assert-false(
+        is.special-variable('var(--anything) no'),
+        'extra end'
+      );
+    }
+
+    @include it('Returns false for calculations') {
+      @include assert-false(is.special-variable(calc(3em + 2px)));
+    }
+    @include it('Returns false for calc strings') {
+      @include assert-false(is.special-variable('calc(3em + 2px)'));
+    }
+    @include it('Returns false for env strings') {
+      @include assert-false(is.special-variable(env(--var)));
+    }
+    @include it('Returns false for clamp strings') {
+      @include assert-false(is.special-variable(clamp(1em, 5vw, 3em)));
+    }
+    @include it('Returns false for min strings') {
+      @include assert-false(is.special-variable(min(1em, 5vw)));
+    }
+    @include it('Returns false for max strings') {
+      @include assert-false(is.special-variable(max(1em, 5vw)));
+    }
+  }
+}

@@ -1,0 +1,42 @@
+@use '../utils/is';
+@use '../utils/list';
+@use '../utils/math';
+@use '../utils/string';
+@use '../utils/throw';
+@use '../process';
+
+@function lab($channels) {
+  $components: process.parse-color($channels, 3);
+
+  @if not $components {
+    @return string.unquote('lab(#{$channels})');
+  }
+
+  $channels: list.nth($components, 1);
+  $alpha: list.nth($components, 2);
+
+  @each $element in $channels {
+    @if is.type($element, 'number')
+    and not list.index('' '%', math.unit($element)) {
+      @return throw.error(
+        'Channels must be unitless numbers, percentages, or the keyword none.',
+        'lab'
+      );
+    }
+  }
+
+  $lightness: list.nth($channels, 1);
+  $a: list.nth($channels, 2);
+  $b: list.nth($channels, 3);
+
+  @if is.type($lightness, 'number') {
+    $lightness: max(0%, $lightness);
+  }
+
+  @return process.build-color(
+    'lab',
+    ($lightness, $a, $b),
+    $alpha,
+    false,
+  );
+}

@@ -1,0 +1,74 @@
+@use '../../node_modules/sass-true' as *;
+@use '../../sass/utils/list';
+
+@include test-module('utils/list') {
+  @include describe('template') {
+    @include it('Returns an empty list') {
+      @include assert-equal(
+        list.length(list.template(one two three)),
+        0
+      );
+    }
+
+    @include it('Returns a list with the same bracketing as the input list') {
+      @include assert-true(
+        list.is-bracketed(list.template([one two three]))
+      );
+      @include assert-false(
+        list.is-bracketed(list.template(one two three))
+      );
+    }
+
+    @include it('Returns a list with the same separator as the input list') {
+      @include assert-equal(
+        list.separator(list.template([one two three])),
+        'space'
+      );
+      @include assert-equal(
+        list.separator(list.template((one, two three))),
+        'comma'
+      );
+      @include assert-equal(
+        list.separator(list.template(list.slash(one, two))),
+        'slash'
+      );
+    }
+  }
+
+  @include describe('slice') {
+    @include it('Returns a list with the same template as the origin list') {
+      @include assert-equal(
+        list.template(list.slice([one two three])),
+        list.template([one two])
+      );
+    }
+
+    @include it('Returns the list unchanged by default') {
+      @include assert-equal(
+        list.slice([one two three]),
+        [one two three]
+      );
+    }
+
+    @include it('Returns a list slice starting at a given index') {
+      @include assert-equal(
+        list.slice((one, two, three), 2),
+        (two, three)
+      );
+    }
+
+    @include it('Returns a list slice ending before a given index') {
+      @include assert-equal(
+        list.slice((one, two, three, four), 2, 4),
+        (two, three)
+      );
+    }
+
+    @include it('Accepts a negative end index') {
+      @include assert-equal(
+        list.slice((one, two, three, four), 2, -1),
+        (two, three)
+      );
+    }
+  }
+}

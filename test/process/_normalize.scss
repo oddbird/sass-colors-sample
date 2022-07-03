@@ -1,0 +1,42 @@
+@use '../../node_modules/sass-true' as *;
+@use '../../sass/process/normalize';
+
+@include test-module('process/normalize') {
+  @include describe ('hue') {
+    @include it('Converts none to zero when asked') {
+      @include assert-equal(
+        normalize.hue(none, true),
+        0deg
+      );
+    }
+
+    @include it('Allows none when asked') {
+      @include assert-equal(
+        normalize.hue(none, false),
+        none
+      );
+    }
+
+    @include it('Converts numbers to degress') {
+      @include assert-equal(
+        normalize.hue(0.5turn, true),
+        180deg
+      );
+    }
+
+    // this might be a problem for some use-cases
+    @include it('Normalize degrees into 360 range') {
+      @include assert-equal(
+        normalize.hue(1.5turn, true),
+        180deg
+      );
+    }
+
+    @include it('Normalize degrees into half-open range') {
+      @include assert-equal(
+        normalize.hue(3turn, true),
+        normalize.hue(0, true)
+      );
+    }
+  }
+}

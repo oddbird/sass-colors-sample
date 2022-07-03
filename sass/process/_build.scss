@@ -1,13 +1,22 @@
 @use '../utils/is';
+@use 'sass:map';
 
 @function color($space, $channels, $alpha, $is-legacy) {
   $check: (
-    is.type($space, 'string', 'color space')
-    is.type($channels, 'list', 'color channels')
-    is.type($alpha, 'number', 'color alpha')
-    is.type($is-legacy, 'boolean', 'color is-legacy')
+    'space': is.type($space, 'string', 'color space'),
+    'channels': is.type($channels, 'list', 'color channels'),
+    'alpha': is.type($alpha, 'number', 'color alpha'),
+    'is-legacy': is.type($is-legacy, 'bool', 'color is-legacy'),
   );
 
+  // catch errors for testing, otherwise errors will be thrown above
+  @each $test in map.values($check) {
+    @if $test != true {
+      @return $check;
+    }
+  }
+
+  // no errors
   @return (
     'space': $space,
     'channels': $channels,

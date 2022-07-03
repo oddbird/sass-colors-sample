@@ -1,6 +1,8 @@
 @use '../utils/is';
 @use '../utils/math';
 
+// normalization happens after type checking,
+// so we already know we have a number or none.
 @function hue($hue, $convert-none) {
   @if is.none($hue) {
     @return if($convert-none, 0deg, $hue);

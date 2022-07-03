@@ -3,7 +3,11 @@
 @use 'sass:list';
 @use 'sass:meta';
 
-@function type($value, $types, $throw-as) {
+@function type(
+  $value,
+  $types,
+  $throw-as: null
+) {
   $is: meta.type-of($value);
   @if not list.index($types, $is) {
     @if $throw-as {
@@ -21,30 +25,48 @@
 
 @function none($value) { @return $value == 'none'; }
 
-@function special(
-  $value,
-  $special: ('var', 'calc'),
-) {
-  @if none($value) { @return false; }
-
-  $is: false;
+@function special-number($value) {
   $type: meta.type-of($value);
 
-  @if list.index($special, 'calc') {
-    $is: $is or ($type == 'calculation') or (
-      ($type == 'string')
-      and (string.index($value, 'calc(') == 1)
-      and (string.slice($value, -1) == ')')
-    );
+  @if $type == 'calculation' {
+    @return true;
   }
 
-  @if list.index($special, 'var') {
+  @if ($type != 'string') {
+    @return false;
+  }
+
+  $specials: (
+    'calc(',
+    'var(',
+    'env(',
+    'clamp(',
+    'min(',
+    'max(',
+  );
+
+  $value: string.to-lower-case($value);
+  $is: false;
+
+  @each $special in $specials {
     $is: $is or (
-      ($type == 'string')
-      and (string.index($value, 'var(') == 1)
-      and (string.slice($value, -1) == ')')
+      (string.index($value, $special) == 1)
+      and
+      (string.slice($value, -1) == ')')
     );
   }
 
   @return $is;
+}
+
+@function special-variable($value) {
+  @if not type($value, 'string') {
+    @return false;
+  }
+
+  @return (
+    (string.index($value, 'var(') == 1)
+    and
+    (string.slice($value, -1) == ')')
+  );
 }

@@ -1,0 +1,30 @@
+@use '../../node_modules/sass-true' as *;
+@use '../../sass/process/build';
+
+@include test-module('process/build') {
+  @include describe('color') {
+    @include it('Builds a map from arguments') {
+      @include assert-equal(
+        build.color('sp', 20deg none 45%, 0.4, true),
+        (
+          'space': 'sp',
+          'channels': 20deg none 45%,
+          'alpha': 0.4,
+          'is-legacy': true,
+        )
+      );
+    }
+
+    @include it('Errors on wrong value types') {
+      @include assert-equal(
+        build.color(20deg, null, 'hello', list list list),
+        (
+          'space': 'ERROR [color space] Type should be one of "string", got "number"',
+          'channels': 'ERROR [color channels] Type should be one of "list", got "null"',
+          'alpha': 'ERROR [color alpha] Type should be one of "number", got "string"',
+          'is-legacy': 'ERROR [color is-legacy] Type should be one of "bool", got "list"',
+        )
+      );
+    }
+  }
+}

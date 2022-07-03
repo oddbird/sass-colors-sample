@@ -1,0 +1,61 @@
+@use '../../node_modules/sass-true' as *;
+@use '../../sass/spaces/srgb';
+@use 'sass:string';
+
+// currently requires list.slash() for proper syntax
+@use 'sass:list';
+
+@include test-module('spaces/hwb') {
+  // hwb
+  @include describe('hwb') {
+    @include it('Returns a color object') {
+      @include assert-equal(
+        srgb.hwb(120 30% 50%),
+        (
+          'space': 'hwb',
+          'channels': (120deg, 30%, 50%),
+          'alpha': 1,
+          'is-legacy': true,
+        )
+      );
+    }
+
+    @include it('Returns a color object with alpha') {
+      @include assert-equal(
+        srgb.hwb(list.slash(120 30% 50%, 45%)),
+        (
+          'space': 'hwb',
+          'channels': (120deg, 30%, 50%),
+          'alpha': 0.45,
+          'is-legacy': true,
+        )
+      );
+    }
+
+    @include it('Returns a color object with none') {
+      @include assert-equal(
+        srgb.hwb(120 none 50%),
+        (
+          'space': 'hwb',
+          'channels': (120deg, none, 50%),
+          'alpha': 1,
+          'is-legacy': true,
+        )
+       );
+    }
+
+    @include it('Returns the input as a string when special numbers are used') {
+      @include assert-equal(
+        srgb.hwb(list.slash(120 var(--w) 50%, 45%)),
+        string.unquote('hwb(120 var(--w) 50% / 45%)')
+      );
+    }
+
+    @include it('Eagerly returns string when full value is a var') {
+      @include assert-equal(
+        srgb.hwb(var(--anything)),
+        string.unquote('hwb(var(--anything))')
+      );
+    }
+  }
+}

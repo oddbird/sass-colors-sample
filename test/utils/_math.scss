@@ -49,4 +49,18 @@
       );
     }
   }
+
+  // zero-none
+  @include describe('zero-none') {
+    @include it('Returns zero if the value is none') {
+      @include assert-equal(math.zero-none(none), 0);
+    }
+
+    @include it('Returns any other value unchanged') {
+      @include assert-equal(math.zero-none(0), 0);
+      @include assert-equal(math.zero-none(true), true);
+      @include assert-equal(math.zero-none(23em), 23em);
+      @include assert-equal(math.zero-none(var(--any)), var(--any));
+    }
+  }
 }

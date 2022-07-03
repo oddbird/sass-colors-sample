@@ -30,7 +30,7 @@
   ],
   "scripts": {
     "test": "mocha",
-    "watch": "chokidar 'test/**' 'sass/**/*.scss' -c 'yarn test'",
+    "dev": "chokidar 'test/**' 'sass/**/*.scss' -c 'yarn test'",
     "commit": "yarn test"
   },
   "devDependencies": {

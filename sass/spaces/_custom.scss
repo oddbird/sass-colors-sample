@@ -1,0 +1,28 @@
+@use '../utils/is';
+@use '../utils/list';
+@use '../utils/math';
+@use '../utils/string';
+@use '../utils/throw';
+@use '../process';
+
+@function color($channels) {
+  $components: process.parse-color($channels, 3, true);
+
+  @if not $components {
+    @return string.unquote('color(#{$channels})');
+  }
+
+  $alpha: list.nth($components, 2);
+  $combined: list.nth($components, 1);
+  $space: list.nth($combined, 1);
+  $channels: list.nth($combined, 2);
+
+  // Work In Progress
+
+  @return process.build-color(
+    $space,
+    $channels,
+    $alpha,
+    false,
+  );
+}
