@@ -1,5 +1,7 @@
 @use '../../node_modules/sass-true' as *;
 @use '../../sass/utils/is';
+@use '../../sass/process/build';
+@use 'sass:map';
 
 @include test-module('utils/is') {
   @include describe('type') {
@@ -21,6 +23,22 @@
         is.type('hello', 'list' 'number', 'tests'),
         'ERROR [tests] Type should be one of "list number", got "string"'
       );
+    }
+  }
+
+  @include describe('color-object') {
+    $color: build.color(lch, 50% 50% 120deg, 1, false);
+
+    @include it('Returns true when given a color object') {
+      @include assert-true(is.color-object($color));
+    }
+
+    @include it('Returns false when given anything else') {
+      @include assert-false(
+        is.color-object(map.remove($color, 'alpha'))
+      );
+      @include assert-false(is.color-object(75));
+      @include assert-false(is.color-object(red));
     }
   }
 

@@ -3,16 +3,18 @@
 @use '../utils/math';
 @use '../utils/string';
 @use '../utils/throw';
+@use '../define';
 
+@use 'sass:map';
 @use 'sass:meta';
 
 @function color(
   $input,
-  $expected,
-  $includes-space: false
+  $space: null
 ) {
+  $include-space: not $space;
   $components: null;
-  $space: null;
+  $expected: null;
   $channels: null;
   $alpha: null;
 
@@ -94,21 +96,25 @@
       );
     }
 
-    @if $includes-space {
+    @if not $space {
       $space: list.nth($components, 1);
       $channels: list.slice($components, 2);
-
-      @if not (meta.type-of($space) == 'string') {
-        @return throw.error(
-          'Color space must be a string',
-          'build color'
-        );
-      }
     } @else {
       $channels: $components;
     }
 
-    @if list.length($channels) > $expected {
+    @if not (meta.type-of($space) == 'string') {
+      @return throw.error(
+        'Color space must be a string',
+        'build color'
+      );
+    }
+
+    @if map.get(define.$spaces, $space) {
+      $expected: list.length(map.get(define.$spaces, $space));
+    }
+
+    @if $expected and list.length($channels) > $expected {
       @return throw.error(
         'Max channel count is #{$expected}, but #{list.length($channels)} channels were given',
         'build color'
@@ -140,9 +146,11 @@
     }
   }
 
-  // handle special values
+  // handle special values unknown spaces
   @if is.special-number($alpha) { @return null; }
-  @if is.special-variable($space) { @return null; }
+  @if is.special-variable($space) or not map.get(define.$spaces, $space) {
+    @return null;
+  }
 
   // also catches a single custom prop for all $channels
   @each $channel in $channels {
@@ -150,7 +158,7 @@
   }
 
   // require exact channel-count
-  @if list.length($channels) != $expected {
+  @if $expected and list.length($channels) != $expected {
     @return throw.error(
       'Expected #{$expected} channels, but found #{list.length($channels)}',
       'build color'
@@ -158,6 +166,6 @@
   }
 
   // return the result
-  $components: if($includes-space and $space, $space $channels, $channels);
+  $components: if($include-space, $space $channels, $channels);
   @return list.slash($components, $alpha);
 }

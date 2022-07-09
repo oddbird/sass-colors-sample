@@ -1,0 +1,73 @@
+@use '../../node_modules/sass-true' as *;
+@use '../../sass/spaces/custom';
+@use 'sass:string';
+
+// currently requires list.slash() for proper syntax
+@use 'sass:list';
+
+@include test-module('spaces/custom') {
+  @include describe('color » general') {
+    @include it('Returns the input as a string when special values are used') {
+      @include assert-equal(
+        custom.color(list.slash(srgb 0.12 var(--w) 50%, 45%)),
+        string.unquote('color(srgb 0.12 var(--w) 50% / 45%)')
+      );
+    }
+
+    @include it('Returns the input as a string when a custom space is used') {
+      @include assert-equal(
+        custom.color(list.slash(unknown 0.12 none 50%, 45%)),
+        string.unquote('color(unknown 0.12 none 50% / 45%)')
+      );
+    }
+
+    @include it('Errors on non-custom non-predefined color space') {
+      @include assert-equal(
+        custom.color(lch 0 none 30deg),
+        'ERROR [color()] `lch` is not a valid color space for the `color()` function'
+      );
+    }
+  }
+
+  @include describe('color » rgb') {
+    @include it('Errors on unknown rgb channel units') {
+      @include assert-equal(
+        custom.color(srgb 0 none 30deg),
+        'ERROR [color()] Color channels in `srgb` must be a number or percentage'
+      );
+    }
+
+    @include it('Converts and clamps percentages') {
+      @include assert-equal(
+        custom.color(srgb 20% none 150%),
+        (
+          'space': srgb,
+          'channels': 0.2 none 1,
+          'alpha': 1,
+          'is-legacy': false,
+        )
+      );
+    }
+  }
+
+  @include describe('color » xyz') {
+    @include it('Errors on unknown xyz channel units') {
+      @include assert-equal(
+        custom.color(xyz-d50 0 none 30deg),
+        'ERROR [color()] Color channels in `xyz-d50` must be a number or percentage'
+      );
+    }
+
+    @include it('Converts percentages, without clamping') {
+      @include assert-equal(
+        custom.color(xyz 20% none 150%),
+        (
+          'space': xyz,
+          'channels': 0.2 none 1.5,
+          'alpha': 1,
+          'is-legacy': false,
+        )
+      );
+    }
+  }
+}

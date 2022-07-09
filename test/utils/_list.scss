@@ -71,4 +71,36 @@
       );
     }
   }
+
+  @include describe('join-all') {
+    @include it('Joins mutliple lists') {
+      @include assert-equal(
+        list.join-all(one two three, four five, six seven one five eight),
+        (one two three four five six seven one five eight)
+      );
+    }
+
+    @include it('Uses the template of the first list') {
+      @include assert-equal(
+        list.join-all((1, 2, 3), [four five]),
+        (1, 2, 3, four, five)
+      );
+    }
+  }
+
+  @include describe('unique') {
+    @include it('Returns a list of unique values') {
+      @include assert-equal(
+        list.unique(one two three four five six seven one five eight),
+        (one two three four five six seven eight)
+      );
+    }
+
+    @include it('Has the same template as the origin list') {
+      @include assert-equal(
+        list.unique([one, two, one, five, eight]),
+        [one, two, five, eight]
+      );
+    }
+  }
 }

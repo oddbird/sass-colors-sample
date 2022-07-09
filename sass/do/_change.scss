@@ -1,0 +1,59 @@
+@use '../define';
+@use '../utils/is';
+@use '../utils/list';
+@use '../utils/throw';
+@use 'sass:map';
+@use 'sass:meta';
+
+@function change(
+  $color,
+  $changes...
+) {
+  $changes: meta.keywords($changes);
+
+  @if not is.color-object($color) {
+    @return throw.error(
+      '`#{$color}` is not a valid color for making changes',
+      'change()'
+    );
+  }
+
+  $space: map.get($changes, 'space') or map.get($color, 'space');
+  $components: map.remove($changes, 'space');
+
+  $valid: map.get(define.$spaces, $space);
+
+  @if not $valid {
+    @return throw.error(
+      '`#{$space}` is not a valid color space for making changes',
+      'change()'
+    );
+  }
+
+  // @@@ convert $color into $space
+
+  @each $channel, $value in $components {
+    @if $channel == 'alpha' {
+      $color: map.set($color, 'alpha', $value);
+    } @else {
+      $index: list.index($valid, $channel);
+
+      @if not $index {
+        @return throw.error(
+          '`#{$channel}` is not a valid component in `#{$space}` color space',
+          'change()'
+        );
+      }
+
+      $color: map.set(
+        $color,
+        'channels',
+        list.set-nth(map.get($color, 'channels'), $index, $value)
+      );
+    }
+  }
+
+  // @@@ convert $color back to original space???
+
+  @return $color;
+}

@@ -22,7 +22,7 @@
 }
 
 @function hwb($channels) {
-  $components: process.parse-color($channels, 3);
+  $components: process.parse-color($channels, 'hwb');
 
   @if not $components {
     @return string.unquote('hwb(#{$channels})');

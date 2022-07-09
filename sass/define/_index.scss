@@ -1,0 +1,47 @@
+@use '../utils/list';
+@use 'sass:map';
+
+$legacy-rgb: (
+  'srgb': ('red', 'green', 'blue'),
+  'hsl': ('hue', 'saturation', 'lightness'),
+  'hwb': ('hue', 'whiteness', 'blackness'),
+);
+
+$predefined-rgb: (
+  'srgb': ('red', 'green', 'blue'),
+  'srgb-linear': ('red', 'green', 'blue'),
+  'display-p3': ('red', 'green', 'blue'),
+  'a98-rgb': ('red', 'green', 'blue'),
+  'prophoto-rgb': ('red', 'green', 'blue'),
+  'rec2020': ('red', 'green', 'blue'),
+);
+
+$xyz: (
+  'xyz': ('x', 'y', 'z'),
+  'xyz-d50': ('x', 'y', 'z'),
+  'xyz-d65': ('x', 'y', 'z'),
+);
+
+$predefined-spaces: map.merge($predefined-rgb, $xyz);
+
+$cie: (
+  'lab': ('lightness', 'a', 'b'),
+  'lch': ('lightness', 'chroma', 'hue'),
+);
+
+$ok: (
+  'oklab': ('lightness', 'a', 'b'),
+  'oklch': ('lightness', 'chroma', 'hue'),
+);
+
+$spaces: ();
+
+@each $set in (
+  $legacy-rgb, $predefined-rgb,
+  $xyz, $cie, $ok,
+) {
+  $spaces: map.merge($spaces, $set);
+}
+
+$channels: list.unique(list.join-all(map.values($spaces)...));
+$components: list.join($channels, 'alpha');

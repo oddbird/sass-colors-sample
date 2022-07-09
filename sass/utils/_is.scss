@@ -1,6 +1,7 @@
 @use 'string';
 @use 'throw';
 @use 'sass:list';
+@use 'sass:map';
 @use 'sass:meta';
 
 @function type(
@@ -21,6 +22,14 @@
   }
 
   @return true;
+}
+
+@function color-object($color) {
+  $props: ('space', 'channels', 'alpha', 'is-legacy');
+  @if (meta.type-of($color) == 'map') and (map.keys($color) == $props) {
+    @return true;
+  }
+  @return false;
 }
 
 @function none($value) { @return $value == 'none'; }

@@ -6,12 +6,12 @@
   @include describe('color » errors') {
     @include it('Errors if input has the wrong list properties') {
       @include assert-equal(
-        parse.color([one two three], 3),
+        parse.color([one two three], 'srgb'),
         'ERROR [build color] Input must be an unbracketed list, with space or slash separators',
         'bracketed'
       );
       @include assert-equal(
-        parse.color((one, two, three), 3),
+        parse.color((one, two, three), 'srgb'),
         'ERROR [build color] Input must be an unbracketed list, with space or slash separators',
         'comma separated'
       );
@@ -19,14 +19,14 @@
 
     @include it('Errors on a slash-list without exactly two items') {
       @include assert-equal(
-        parse.color(list.slash(one two, three, four), 3),
+        parse.color(list.slash(one two, three, four), 'srgb'),
         'ERROR [build color] Slash-separated input should only include channels & alpha values'
       );
     }
 
     @include it('Errors if the last channel & alpha cant be parsed') {
       @include assert-equal(
-        parse.color(one two var(--three) / 0.5 / any, 3),
+        parse.color(one two var(--three) / 0.5 / any, 'srgb'),
         'ERROR [build color] Unable to parse final value of input'
       );
     }
@@ -35,56 +35,70 @@
 
     @include it('Errors if channels are bracketed') {
       @include assert-equal(
-        parse.color(list.slash([one two three], 0.5), 3),
+        parse.color(list.slash([one two three], 0.5), 'srgb'),
         'ERROR [build color] Channels must be an unbracketed, space-separated list'
       );
     }
 
     @include it('Errors if channels are not space-separated') {
       @include assert-equal(
-        parse.color(list.slash((one, two, three), 0.5), 3),
+        parse.color(list.slash((one, two, three), 0.5), 'srgb'),
         'ERROR [build color] Channels must be an unbracketed, space-separated list'
       );
       @include assert-equal(
-        parse.color(list.slash(list.slash(one, two, three), 0.5), 3),
+        parse.color(list.slash(list.slash(one, two, three), 0.5), 'srgb'),
         'ERROR [build color] Channels must be an unbracketed, space-separated list'
+      );
+    }
+
+    @include it('Errors if color-space is not a string') {
+      @include assert-equal(
+        parse.color(0 1 2 3),
+        'ERROR [build color] Color space must be a string',
+        'parsed color space'
+      );
+
+      @include assert-equal(
+        parse.color(0 1 2 3, 45),
+        'ERROR [build color] Color space must be a string',
+        'given color space'
       );
     }
 
     @include it('Errors if extra channels are defined') {
       @include assert-equal(
-        parse.color(one two three four, 3),
+        parse.color(one two three four, 'srgb'),
         'ERROR [build color] Max channel count is 3, but 4 channels were given'
       );
     }
 
     @include it('Errors if individual channels are the wrong type') {
       @include assert-equal(
-        parse.color('' / var(--alpha), 3),
+        parse.color('' / var(--alpha), 'srgb'),
         'ERROR [build color] Channel values should be numbers, css variables, or the keyword none',
         'empty string'
       );
 
       @include assert-equal(
-        parse.color(1 two 3 / var(--alpha), 3),
+        parse.color(1 two 3 / var(--alpha), 'srgb'),
         'ERROR [build color] Channel values should be numbers, css variables, or the keyword none',
         'invalid string'
       );
 
       @include assert-equal(
-        parse.color(1 (map: of) 3 / var(--alpha), 3),
+        parse.color(1 (map: of) 3 / var(--alpha), 'srgb'),
         'ERROR [build color] Channel values should be numbers, css variables, or the keyword none',
         'map'
       );
 
       @include assert-equal(
-        parse.color(1 (list, of) 3 / var(--alpha), 3),
+        parse.color(1 (list, of) 3 / var(--alpha), 'srgb'),
         'ERROR [build color] Channel values should be numbers, css variables, or the keyword none',
         'list'
       );
 
       @include assert-equal(
-        parse.color(1 red 3 / var(--alpha), 3),
+        parse.color(1 red 3 / var(--alpha), 'srgb'),
         'ERROR [build color] Channel values should be numbers, css variables, or the keyword none',
         'color'
       );
@@ -92,12 +106,12 @@
 
     @include it('Errors if alpha is the wrong type') {
       @include assert-equal(
-        parse.color(list.slash(1 2 3, hello), 3),
+        parse.color(list.slash(1 2 3, hello), 'srgb'),
         'ERROR [build color] Alpha value must be a number or the keyword none',
         'string'
       );
       @include assert-equal(
-        parse.color(list.slash(1 2 3, 1 2), 3),
+        parse.color(list.slash(1 2 3, 1 2), 'srgb'),
         'ERROR [build color] Alpha value must be a number or the keyword none',
         'list'
       );
@@ -105,36 +119,29 @@
 
     @include it('Errors if given too few channels') {
       @include assert-equal(
-        parse.color(1 2, 3),
+        parse.color(1 2, 'srgb'),
         'ERROR [build color] Expected 3 channels, but found 2'
-      );
-    }
-
-    @include it('Errors if color-space is not a string') {
-      @include assert-equal(
-        parse.color(0 1 2 3, 3, true),
-        'ERROR [build color] Color space must be a string'
       );
     }
   }
 
-  @include describe('color » special numbers') {
+  @include describe('color » special values') {
     @include it('Returns null when input is a special variable') {
       @include assert-equal(
-        parse.color(var(--something, else), 3),
+        parse.color(var(--something, else), 'srgb'),
         null
       );
     }
 
     @include it('Returns null when alpha is a special number') {
       @include assert-equal(
-        parse.color(list.slash(1 2 3, var(--alpha)), 3),
+        parse.color(list.slash(1 2 3, var(--alpha)), 'srgb'),
         null,
         'variable'
       );
 
       @include assert-equal(
-        parse.color(list.slash(1 2 3, calc(1em + 2px)), 3),
+        parse.color(list.slash(1 2 3, calc(1em + 2px)), 'srgb'),
         null,
         'calc'
       );
@@ -142,28 +149,34 @@
 
     @include it('Returns null when channels is a special variable') {
       @include assert-equal(
-        parse.color(list.slash(var(--hello), 0.5), 3),
+        parse.color(list.slash(var(--hello), 0.5), 'oklch'),
         null
       );
     }
 
     @include it('Returns null when any channel is a special number') {
       @include assert-equal(
-        parse.color(list.slash(1 2 var(--hello), 0.5), 3),
+        parse.color(list.slash(1 2 var(--hello), 0.5), 'hsl'),
         null,
         'variable'
       );
       @include assert-equal(
-        parse.color(list.slash(1 2 calc(1em + 2%), 0.5), 3),
+        parse.color(list.slash(1 2 calc(1em + 2%), 0.5), 'hsl'),
         null,
         'calc'
       );
     }
 
-
     @include it('Returns null when color-space is a special variable') {
       @include assert-equal(
-        parse.color(list.slash(var(--hello) 2 3 4, 0.5), 3, true),
+        parse.color(list.slash(var(--hello) 2 3 4, 0.5)),
+        null
+      );
+    }
+
+    @include it('Returns null when space is unknown') {
+      @include assert-equal(
+        parse.color(custom 1 2 3 none / 0.5),
         null
       );
     }
@@ -172,35 +185,47 @@
   @include describe('color » success') {
     @include it('Adds missing alpha') {
       @include assert-equal(
-        parse.color(1 2 3, 3),
+        parse.color(1 2 3, 'hwb'),
         list.slash(1 2 3, 1)
       );
     }
 
     @include it('Returns numeric alpha') {
       @include assert-equal(
-        parse.color(list.slash(1 2 3, 0.2), 3),
+        parse.color(list.slash(1 2 3, 0.2), 'hwb'),
         list.slash(1 2 3, 0.2)
       );
     }
 
     @include it('Converts percentage alpha') {
       @include assert-equal(
-        parse.color(list.slash(1 2 3, 50%), 3),
+        parse.color(list.slash(1 2 3, 50%), 'hwb'),
         list.slash(1 2 3, 0.5)
       );
     }
 
     @include it('Allows missing (none) components') {
       @include assert-equal(
-        parse.color(1 none 3 / none, 3),
+        parse.color(1 none 3 / none, 'hwb'),
         list.slash(1 none 3, none)
       );
     }
 
     @include it('Returns color-space in addition to channels') {
       @include assert-equal(
-        parse.color(srgb 1 2 none / 0.5, 3, true),
+        parse.color(srgb 1 2 none / 0.5),
+        list.slash(srgb (1 2 none), 0.5)
+      );
+    }
+
+    @include it('Enforces expected channel count for known spaces') {
+      @include assert-equal(
+        parse.color(srgb 1 2 3 none / 0.5),
+        'ERROR [build color] Max channel count is 3, but 4 channels were given'
+      );
+
+      @include assert-equal(
+        parse.color(srgb 1 2 none / 0.5),
         list.slash(srgb (1 2 none), 0.5)
       );
     }

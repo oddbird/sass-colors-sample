@@ -6,7 +6,7 @@
 @use '../process';
 
 @function lab($channels) {
-  $components: process.parse-color($channels, 3);
+  $components: process.parse-color($channels, 'lab');
 
   @if not $components {
     @return string.unquote('lab(#{$channels})');

@@ -3,22 +3,62 @@
 @use '../utils/math';
 @use '../utils/string';
 @use '../utils/throw';
+@use '../define';
 @use '../process';
+@use 'sass:map';
+@use 'sass:meta';
 
-@function color($channels) {
-  $components: process.parse-color($channels, 3, true);
+@function color($description) {
+  // parsing
+  $components: process.parse-color($description);
 
   @if not $components {
-    @return string.unquote('color(#{$channels})');
+    @return string.unquote('color(#{$description})');
   }
 
   $alpha: list.nth($components, 2);
-  $combined: list.nth($components, 1);
-  $space: list.nth($combined, 1);
-  $channels: list.nth($combined, 2);
+  $color: list.nth($components, 1);
+  $space: list.nth($color, 1);
+  $channels: list.nth($color, 2);
 
-  // Work In Progress
+  // validation for color spaces
+  // (custom spaces have been returned already)
+  @if not map.has-key(define.$predefined-spaces, $space) {
+    @return throw.error(
+      '`#{$space}` is not a valid color space for the `color()` function',
+      'color()'
+    );
+  }
 
+  // validation for numeric channels
+  @for $i from 1 through list.length($channels) {
+    $channel: list.nth($channels, $i);
+
+    // validate channel units & ranges
+    @if (meta.type-of($channel) == 'number') {
+      $unit: math.unit($channel);
+
+      @if ($unit == '%') {
+        // convert from percentages without clamping
+        $channel: math.div($channel, 100%);
+      } @else if $unit != '' {
+        // error on unexpected units
+        @return throw.error(
+          'Color channels in `#{$space}` must be a number or percentage',
+          'color()'
+        );
+      }
+
+      // only clamp for rgb spaces
+      @if map.has-key(define.$predefined-rgb, $space) {
+        $channel: math.clamp(0, $channel, 1);
+      }
+    }
+
+    $channels: list.set-nth($channels, $i, $channel);
+  }
+
+  // return a color object
   @return process.build-color(
     $space,
     $channels,

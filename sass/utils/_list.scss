@@ -28,3 +28,25 @@
 
   @return $new;
 }
+
+@function join-all($lists...) {
+  $joined: template(list.nth($lists, 1));
+
+  @each $list in $lists {
+    $joined: list.join($joined, $list);
+  }
+
+  @return $joined;
+}
+
+@function unique($list) {
+  $unique: template($list);
+
+  @each $item in $list {
+    @if not list.index($unique, $item) {
+      $unique: list.append($unique, $item);
+    }
+  }
+
+  @return $unique;
+}
